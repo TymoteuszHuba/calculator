@@ -1,108 +1,161 @@
-const output = document.querySelector('.calc-output');
-const number = document.querySelectorAll('.number');
-const ac = document.querySelector('.ac');
-const del = document.querySelector('.del');
 const btns = document.querySelectorAll('button');
-let firstVal = '0';
-let firstFloatNumber;
-let secondFloatNumber;
-let operator = '';
-let displayFirstVal = output.lastElementChild;
-let displaySecVal = output.firstElementChild;
+const summarizeBtn = document.querySelector('.solution');
+const currentOperationDisplay = document.querySelector('.current-calc');
+const resultOperationDisplay = document.querySelector('.previous-calc');
 
-output.lastElementChild.textContent = firstVal;
+let firstNumber = '';
+let secondNumber = '';
+let convertNumber = '';
+let operator = null;
+let flag = false;
 
-const operate = () => {
-	let result;
-	switch (operator) {
-		case '+':
-			result = firstFloatNumber + secondFloatNumber;
-			break;
-		case '-':
-			result = firstFloatNumber - secondFloatNumber;
-			break;
-		case '*':
-			result = firstFloatNumber * secondFloatNumber;
-			break;
-		case '/':
-			result = firstFloatNumber / secondFloatNumber;
-			break;
-		case '%':
-			result = firstFloatNumber % secondFloatNumber;
-			break;
-		default:
-			result = firstFloatNumber;
-			break;
+currentOperationDisplay.textContent = '0';
+
+// function which add numbers to display screen of calculator
+const setNumber = (num) => {
+	if (currentOperationDisplay.textContent === '0' || flag) resetScreen();
+	currentOperationDisplay.textContent += num;
+	// convertNumber += num;
+	// let floatNumber = parseFloat(convertNumber);
+	// currentOperationDisplay.textContent = floatNumber.toLocaleString(undefined, {
+	// 	maximumFractionDigits: 8,
+	// });
+};
+
+const resetScreen = () => {
+	currentOperationDisplay.textContent = '';
+	flag = false;
+};
+
+// function which responsible for add dot to make decimal numbers
+const appendPoint = () => {
+	if (flag) resetScreen();
+	if (currentOperationDisplay.textContent === '')
+		currentOperationDisplay.textContent = '0';
+	if (currentOperationDisplay.textContent.includes('.')) return;
+	currentOperationDisplay.textContent += '.';
+};
+
+// function which remove last element from textContent
+const deleteNumber = () => {
+	currentOperationDisplay.textContent = currentOperationDisplay.textContent
+		.toString()
+		.slice(0, -1);
+	if (currentOperationDisplay.textContent === '') {
+		currentOperationDisplay.textContent = '0';
 	}
-
-	displaySecVal.textContent = result.toLocaleString('en-us', {
-		maximumFractionDigits: 8,
-	});
-
-	displayFirstVal.textContent = '';
-	firstFloatNumber = result;
-	firstVal = result.toString();
+	// convertNumber = convertNumber.toString().slice(0, -1);
+	// currentOperationDisplay.textContent = convertNumber;
+	// if (currentOperationDisplay.textContent === '') {
+	// 	currentOperationDisplay.textContent = '0';
+	// }
 };
 
-const setFirstVal = (val) => {
-	firstVal += val;
-	firstFloatNumber = parseFloat(firstVal);
-	let showFirstVal = firstFloatNumber.toLocaleString('en-US', {
-		maximumFractionDigits: 8,
-	});
-	displayFirstVal.textContent = showFirstVal;
-	console.log('firstFloatNumber: ', firstFloatNumber);
+// function setting firstNumber which take number from display, next set opeartor based on variable operator coresponding with value when function is call
+const setOperator = (op) => {
+	if (operator !== null) calculation();
+	firstNumber = currentOperationDisplay.textContent;
+	operator = op;
+	resultOperationDisplay.textContent = `${firstNumber} ${operator}`;
+	flag = true;
 };
 
-const setSecondVal = (op) => {
-	displaySecVal.textContent = op + ' ' + displayFirstVal.textContent;
-	let secVal = firstVal;
-	secondFloatNumber = parseFloat(secVal);
-	displayFirstVal.textContent = '';
-	firstVal = '';
-	firstFloatNumber = 0;
+const calculation = () => {
+	if (operator === null || flag) return;
+	if (operator === '+' && currentOperationDisplay.textContent === '0') {
+		alert("You can't divide by 0!");
+		return;
+	}
+	secondNumber = currentOperationDisplay.textContent;
+    currentOperationDisplay.textContent = operate(firstNumber, secondNumber, operator);
+	resultOperationDisplay.textContent = `${firstNumber} ${operator} ${secondNumber}`;
+	operator = null;
 };
 
-const displayCalc = (value) => {
-	if ((value > -1 && value < 10) || value === '.') {
-		setFirstVal(value);
-	} else if (
-		value === 'x' ||
-		value === '*' ||
-		value === '/' ||
+const add = (a, b) => {
+	return a + b;
+};
+
+const substract = (a, b) => {
+	return a - b;
+};
+
+const multiply = (a, b) => {
+	return a * b;
+};
+
+const divide = (a, b) => {
+	return a / b;
+};
+
+const operate = (firstNum, secNum, op) => {
+	firstNum = Number(firstNum);
+	secNum = Number(secNum);
+
+	switch (op) {
+		case '+':
+			return add(firstNum, secNum);
+
+		case '-':
+			return substract(firstNum, secNum);
+
+		case '*':
+		case 'x':
+			return firstNum * secNum;
+
+		case '/':
+			if (firstNum === 0) return null;
+			return firstNum / secNum;
+
+		default:
+			return null;
+	}
+};
+
+const setCalc = (value) => {
+	if (value >= 0 && value <= 9) {
+		setNumber(value);
+	}
+	if (value === '.') {
+		appendPoint();
+	}
+	if (
 		value === '+' ||
 		value === '-' ||
-		value === '%'
+		value === '*' ||
+		value === 'x' ||
+		value === '/'
 	) {
-		setSecondVal(value);
-		operator = value === 'x' ? '*' : value;
-		console.log('firstFloatNumber: ', firstFloatNumber);
-		console.log('secondFloatNumber: ', secondFloatNumber);
-	} else if (value === '=') {
-		operate();
-	} else if (value === 'AC' || value === 'c' || value === 'C') {
-		clearCalc();
+		setOperator(value);
+	}
+	if (value === '=' || value === 'Enter') {
+		calculation();
+	}
+	if (value === 'AC' || value === 'c' || value === 'C') {
+		clear();
+	}
+	if (value === 'DEL' || value === 'Backspace') {
+		deleteNumber();
 	}
 };
 
-// function which is responsible for clear calculator
-const clearCalc = () => {
-	output.firstElementChild.textContent = '';
-	output.lastElementChild.textContent = '0';
-	firstVal = '';
+const clear = () => {
+	currentOperationDisplay.textContent = '0';
+	resultOperationDisplay.textContent = '';
+	convertNumber = '';
+	firstNumber = '';
+	secondNumber = '';
+	currentOperation = null;
 };
-
-btns.forEach((button) => {
-	button.addEventListener('click', () => {
-		// console.log(button.textContent);
-		const numberBtn = button.textContent;
-		displayCalc(numberBtn);
-	});
-});
 
 window.addEventListener('keydown', (event) => {
 	const pressedKey = event.key;
-	displayCalc(pressedKey);
+	setCalc(pressedKey);
 });
 
-// ac.addEventListener('click', clearCalc);
+btns.forEach((btn) => {
+	btn.addEventListener('click', () => {
+		const btnNum = btn.textContent;
+		setCalc(btnNum);
+	});
+});

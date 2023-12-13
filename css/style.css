@@ -40,7 +40,7 @@ body {
 
 .current-calc, .previous-calc {
     height: 50%;
-    direction: rtl;
+    text-align: right;
 }
 
 .solution {
